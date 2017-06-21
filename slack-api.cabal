@@ -31,6 +31,7 @@ library
   ghc-options: -Wall -fno-warn-unused-do-bind
   exposed-modules:
       Web.Slack
+    , Web.Slack.Compat
     , Web.Slack.Types
     , Web.Slack.Types.Base
     , Web.Slack.Types.Bot
