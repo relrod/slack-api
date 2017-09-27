@@ -99,6 +99,7 @@ botLoop st f =
     loop = do
       conn <- use connection
       raw <- liftIO $ WS.receiveData conn
+      liftIO $ print raw
       let (msg :: Either String Event) = eitherDecode raw
       case msg of
         Left e -> do

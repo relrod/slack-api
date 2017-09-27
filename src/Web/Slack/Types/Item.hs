@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Web.Slack.Types.Item where
 
 import Data.Aeson
@@ -55,7 +56,6 @@ data MessageUpdate = MessageUpdate
                    , _messagePermalink    :: Maybe URL
                    } deriving Show
 
-
 instance FromJSON MessageUpdate where
   parseJSON = withObject "MessageUpdate"
                 (\o -> MessageUpdate <$> o .: "user"
@@ -64,8 +64,37 @@ instance FromJSON MessageUpdate where
 
 data Edited = Edited { _editedUser :: UserId, _editTimestap :: SlackTimeStamp } deriving Show
 
+newtype ReplyCount = ReplyCount Integer deriving (Show, Num, Eq, Ord)
+
+data MessageReplied = MessageReplied
+                    { _messageRepliedUser :: UserId
+                    , _messageRepliedText :: Text
+                    , _messageRepliedTime :: SlackTimeStamp
+                    , _messageRepliedReplyCount :: ReplyCount
+                    , _messageRepliedReplies :: [Reply]
+                    } deriving Show
+
+data Reply = Reply
+           { _replyUser :: UserId
+           , _replyTime :: SlackTimeStamp
+           } deriving Show
+
+instance FromJSON MessageReplied where
+  parseJSON = withObject "MessageReplied"
+                (\o -> MessageReplied <$> o .: "user"
+                        <*> o .: "text" <*> o .: "ts"
+                        <*> o .: "reply_count" <*> o .: "replies" )
+
+instance FromJSON ReplyCount where
+  parseJSON v = ReplyCount <$> parseJSON v
+
+instance FromJSON Reply where
+  parseJSON = withObject "Reply" (\o -> Reply <$> o .: "user" <*> o .: "ts")
+
 makeLenses ''MessageUpdate
 makeLenses ''Edited
+makeLenses ''MessageReplied
+makeLenses ''Reply
 
 instance FromJSON Edited where
   parseJSON = withObject "Edited" (\o -> Edited <$> o .: "user" <*> o .: "ts")
