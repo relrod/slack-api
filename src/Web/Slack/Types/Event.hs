@@ -55,7 +55,7 @@ data Event where
   GroupMarked :: ChannelId -> SlackTimeStamp -> Event
   GroupHistoryChanged :: SlackTimeStamp -> SlackTimeStamp -> SlackTimeStamp -> Event
   FileCreated :: File -> Event
-  FileShared :: FileReference -> Event
+  FileShared :: FileReference -> Maybe SlackTimeStamp -> SlackTimeStamp -> Event
   FileUnshared :: File -> Event
   FilePublic :: FileReference -> Event
   FilePrivate :: FileId -> Event
@@ -155,7 +155,7 @@ parseType o@(Object v) typ =
       "group_marked" -> GroupMarked <$> v .: "channel" <*> v .: "ts"
       "group_history_changed" -> GroupHistoryChanged <$> v .: "latest" <*> v .: "ts" <*> v .: "event_ts"
       "file_created" -> FileCreated <$> v .: "file"
-      "file_shared"  -> FileShared <$> v .: "file"
+      "file_shared"  -> FileShared <$> v .: "file" <*> v .:? "ts" <*> v .: "event_ts"
       "file_unshared" -> FileUnshared <$> v .: "file"
       "file_public"  -> FilePublic <$> v .: "file"
       "file_private" -> FilePrivate <$> v .: "file"
